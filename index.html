@@ -31,6 +31,12 @@
         right: 12px;
         z-index: 10;
       }
+      .active-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 10;
+      }
     </style>
   </head>
   <body>
@@ -43,9 +49,9 @@
         current: { id: "current", label: "Current State", file: "Current_State_Availity.svg" },
         future: { id: "future", label: "Future State", file: "Future_State_Availity.svg" },
         options: [
-          { id: "option1", label: "Token Enrichment", file: "Option1-TokenEnrichment.svg", status: "active" },
+          { id: "option1", label: "Token Enrichment", file: "Option1-TokenEnrichment.svg", status: "deprecated", statusLabel: "Not Proceeding" },
           { id: "option2", label: "TYK Plugin", file: "Option2-TYK-Plugin.svg", status: "deprecated", statusLabel: "Not Proceeding" },
-          { id: "option3", label: "Istio/Envoy Sidecar", file: "Option3-Istio-Envoy-Sidecar.svg", status: "active" }
+          { id: "option3", label: "Istio/Envoy Sidecar", file: "Option3-Istio-Envoy-Sidecar.svg", status: "recommended", statusLabel: "Active" }
         ]
       };
 
@@ -109,13 +115,16 @@
           e('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-6' },
             diagramData.options.map(opt => {
               const isDeprecated = opt.status === 'deprecated';
+              const isRecommended = opt.status === 'recommended';
               return e('div', {
                 key: opt.id,
                 onClick: () => setSelectedOption(opt.id),
                 className: `relative bg-white rounded-xl p-5 border transition-all cursor-pointer ${
                   isDeprecated 
                     ? 'border-red-200 hover:border-red-300 deprecated-overlay' 
-                    : 'border-neutral-200 hover:border-neutral-400 hover:shadow-md'
+                    : isRecommended
+                      ? 'border-green-300 hover:border-green-400 hover:shadow-md'
+                      : 'border-neutral-200 hover:border-neutral-400 hover:shadow-md'
                 }`
               },
                 isDeprecated && e('div', { className: 'deprecated-badge' },
@@ -128,9 +137,19 @@
                     opt.statusLabel
                   )
                 ),
+                isRecommended && e('div', { className: 'active-badge' },
+                  e('span', { 
+                    className: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200'
+                  }, 
+                    e('svg', { className: 'w-3.5 h-3.5', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 2 },
+                      e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', d: 'M5 13l4 4L19 7' })
+                    ),
+                    opt.statusLabel
+                  )
+                ),
                 e('div', { 
                   className: `aspect-video rounded-lg mb-4 flex items-center justify-center overflow-hidden ${
-                    isDeprecated ? 'bg-red-50/50' : 'bg-neutral-50'
+                    isDeprecated ? 'bg-red-50/50' : isRecommended ? 'bg-green-50/50' : 'bg-neutral-50'
                   }`
                 },
                   e('img', { 
@@ -140,7 +159,7 @@
                   })
                 ),
                 e('h3', { 
-                  className: `font-medium text-center ${isDeprecated ? 'text-red-700' : 'text-neutral-700'}`
+                  className: `font-medium text-center ${isDeprecated ? 'text-red-700' : isRecommended ? 'text-green-700' : 'text-neutral-700'}`
                 }, opt.label),
                 isDeprecated && e('p', { 
                   className: 'text-xs text-center text-red-500 mt-1'
@@ -167,6 +186,14 @@
                   e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', d: 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636' })
                 ),
                 'Not Proceeding'
+              ),
+              currentDiagram?.status === 'recommended' && e('span', { 
+                className: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200'
+              }, 
+                e('svg', { className: 'w-3.5 h-3.5', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 2 },
+                  e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', d: 'M5 13l4 4L19 7' })
+                ),
+                'Active'
               )
             ),
             e('button', {
